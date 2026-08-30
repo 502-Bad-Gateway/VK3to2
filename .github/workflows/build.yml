@@ -35,10 +35,10 @@ jobs:
         shell: cmd
         run: dumpbin /exports dist\vulkan-1.dll
 
-      - name: Upload VK3to2-00-passthrough
+      - name: Upload VK3to2-01-audit-trace
         uses: actions/upload-artifact@v4
         with:
-          name: VK3to2-00-passthrough
+          name: VK3to2-01-audit-trace
           path: |
             dist/vulkan-1.dll
             dist/VK3to2.pdb
