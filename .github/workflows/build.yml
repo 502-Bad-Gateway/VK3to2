@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "src/**"
+      - "VK3to2.ini"
       - ".github/workflows/build.yml"
   workflow_dispatch:
 
@@ -30,16 +31,18 @@ jobs:
         run: |
           if not exist dist mkdir dist
           cl /nologo /LD /O2 /MT /EHsc /std:c++17 /D_WIN32_WINNT=0x0601 /DWINVER=0x0601 src\vk3to2_proxy.cpp /link /DEF:src\vk3to2.def /OUT:dist\vulkan-1.dll /PDB:dist\VK3to2.pdb
+          copy /Y VK3to2.ini dist\VK3to2.ini
 
       - name: Verify exports
         shell: cmd
         run: dumpbin /exports dist\vulkan-1.dll
 
-      - name: Upload VK3to2-01-audit-trace
+      - name: Upload VK3to2-02-crash-correlation
         uses: actions/upload-artifact@v4
         with:
-          name: VK3to2-01-audit-trace
+          name: VK3to2-02-crash-correlation
           path: |
             dist/vulkan-1.dll
             dist/VK3to2.pdb
+            dist/VK3to2.ini
           if-no-files-found: error
