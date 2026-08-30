@@ -7,7 +7,7 @@ $ErrorActionPreference = 'Stop'
 
 $path = 'dist\vk3to2_build08.cpp'
 $src = Get-Content -Raw -LiteralPath $path
-$anchor = 'static void WINAPI Audit_vkSetDebugUtilsObjectNameEXT'
+$anchor = 'static HMODULE g_self = nullptr;'
 if (-not $src.Contains($anchor)) {
     throw "Build 08 final patch anchor not found: $anchor"
 }
