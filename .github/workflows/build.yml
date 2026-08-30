@@ -1,13 +1,6 @@
 name: Build VK3to2
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "src/**"
-      - "ci/**"
-      - "VK3to2.ini"
-      - ".github/workflows/build.yml"
   workflow_dispatch:
 
 permissions:
