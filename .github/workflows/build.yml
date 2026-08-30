@@ -1,11 +1,6 @@
 name: Build VK3to2
 
-# One-shot Build 08 trigger. This push trigger is removed after a successful artifact.
 on:
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/build.yml"
   workflow_dispatch:
 
 permissions:
