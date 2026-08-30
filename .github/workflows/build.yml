@@ -27,25 +27,25 @@ jobs:
         with:
           arch: x64
 
-      - name: Apply Build 03 patch
+      - name: Apply Build 04 patch
         shell: powershell
-        run: .\ci\apply-build03.ps1
+        run: .\ci\apply-build04.ps1
 
       - name: Build vulkan-1.dll
         shell: cmd
         run: |
           if not exist dist mkdir dist
-          cl /nologo /LD /O2 /MT /EHsc /std:c++17 /D_WIN32_WINNT=0x0601 /DWINVER=0x0601 dist\vk3to2_build03.cpp /link /DEF:src\vk3to2.def /OUT:dist\vulkan-1.dll /PDB:dist\VK3to2.pdb
+          cl /nologo /LD /O2 /MT /EHsc /std:c++17 /D_WIN32_WINNT=0x0601 /DWINVER=0x0601 dist\vk3to2_build04.cpp /link /DEF:src\vk3to2.def /OUT:dist\vulkan-1.dll /PDB:dist\VK3to2.pdb
           copy /Y VK3to2.ini dist\VK3to2.ini
 
       - name: Verify exports
         shell: cmd
         run: dumpbin /exports dist\vulkan-1.dll
 
-      - name: Upload VK3to2-03-debug-name-isolation
+      - name: Upload VK3to2-04-renderpass2-lowering
         uses: actions/upload-artifact@v4
         with:
-          name: VK3to2-03-debug-name-isolation
+          name: VK3to2-04-renderpass2-lowering
           path: |
             dist/vulkan-1.dll
             dist/VK3to2.pdb
