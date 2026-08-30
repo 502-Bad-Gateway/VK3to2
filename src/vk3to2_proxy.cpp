@@ -1,6 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <cstdint>
+#include <cstdarg>
 #include <cstdio>
 #include <cstring>
 
@@ -119,9 +120,7 @@ static volatile LONG g_end_rendering_calls = 0;
 
 static void BuildSiblingPath(const wchar_t* filename, wchar_t* output, DWORD capacity) {
     output[0] = L'\0';
-    if (!g_self || !GetModuleFileNameW(g_self, output, capacity)) {
-        return;
-    }
+    if (!g_self || !GetModuleFileNameW(g_self, output, capacity)) return;
     wchar_t* slash = wcsrchr(output, L'\\');
     if (!slash) slash = wcsrchr(output, L'/');
     if (!slash) {
@@ -129,21 +128,17 @@ static void BuildSiblingPath(const wchar_t* filename, wchar_t* output, DWORD cap
         return;
     }
     *(slash + 1) = L'\0';
-    if (wcslen(output) < capacity) {
-        wcsncat_s(output, capacity, filename, _TRUNCATE);
-    }
+    if (wcslen(output) < capacity) wcsncat_s(output, capacity, filename, _TRUNCATE);
 }
 
 static void LogLine(const char* text) {
     wchar_t log_path[MAX_PATH]{};
     BuildSiblingPath(L"VK3to2.log", log_path, MAX_PATH);
     if (!log_path[0]) return;
-
     HANDLE file = CreateFileW(log_path, FILE_APPEND_DATA,
                               FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
                               OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (file == INVALID_HANDLE_VALUE) return;
-
     SYSTEMTIME st{};
     GetLocalTime(&st);
     char line[1200]{};
@@ -190,7 +185,6 @@ static BOOL CALLBACK InitializeRealVulkan(PINIT_ONCE, PVOID, PVOID*) {
         LogLine("ERROR GetSystemDirectoryW failed");
         return TRUE;
     }
-
     wchar_t real_path[MAX_PATH]{};
     wcscpy_s(real_path, system_dir);
     wcsncat_s(real_path, L"\\vulkan-1.dll", _TRUNCATE);
@@ -199,10 +193,8 @@ static BOOL CALLBACK InitializeRealVulkan(PINIT_ONCE, PVOID, PVOID*) {
         LogLine("ERROR could not load System32\\vulkan-1.dll");
         return TRUE;
     }
-
     g_real_gipa = reinterpret_cast<PFN_vkGetInstanceProcAddr>(GetProcAddress(g_real_vulkan, "vkGetInstanceProcAddr"));
     g_real_gdpa = reinterpret_cast<PFN_vkGetDeviceProcAddr>(GetProcAddress(g_real_vulkan, "vkGetDeviceProcAddr"));
-
     if (!g_real_gipa) {
         LogLine("ERROR real vkGetInstanceProcAddr export is missing");
     } else {
@@ -397,23 +389,18 @@ static PFN_vkVoidFunction MaybeInterceptDevice(const char* name, PFN_vkVoidFunct
 extern "C" __declspec(dllexport)
 PFN_vkVoidFunction WINAPI vkGetInstanceProcAddr(VkInstance instance, const char* name) {
     if (!EnsureRealVulkan() || !name) return nullptr;
-
     if (strcmp(name, "vkGetInstanceProcAddr") == 0) return reinterpret_cast<PFN_vkVoidFunction>(&vkGetInstanceProcAddr);
     if (strcmp(name, "vkGetDeviceProcAddr") == 0) return reinterpret_cast<PFN_vkVoidFunction>(&vkGetDeviceProcAddr);
-
     PFN_vkVoidFunction real = g_real_gipa(instance, name);
     if (!real) LogFormat("UNAVAILABLE GIPA %s", name);
-    real = MaybeInterceptInstance(name, real);
-    return real;
+    return MaybeInterceptInstance(name, real);
 }
 
 extern "C" __declspec(dllexport)
 PFN_vkVoidFunction WINAPI vkGetDeviceProcAddr(VkDevice device, const char* name) {
     if (!EnsureRealVulkan() || !name) return nullptr;
-
     if (strcmp(name, "vkGetDeviceProcAddr") == 0) return reinterpret_cast<PFN_vkVoidFunction>(&vkGetDeviceProcAddr);
     if (strcmp(name, "vkGetInstanceProcAddr") == 0) return reinterpret_cast<PFN_vkVoidFunction>(&vkGetInstanceProcAddr);
-
     if (!g_real_gdpa) {
         g_real_gdpa = reinterpret_cast<PFN_vkGetDeviceProcAddr>(g_real_gipa(nullptr, "vkGetDeviceProcAddr"));
         if (!g_real_gdpa) {
@@ -421,7 +408,6 @@ PFN_vkVoidFunction WINAPI vkGetDeviceProcAddr(VkDevice device, const char* name)
             return nullptr;
         }
     }
-
     PFN_vkVoidFunction real = g_real_gdpa(device, name);
     if (!real) LogFormat("UNAVAILABLE GDPA %s", name);
     return MaybeInterceptDevice(name, real);
