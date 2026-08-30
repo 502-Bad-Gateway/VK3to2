@@ -1,0 +1,45 @@
+name: Build VK3to2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - ".github/workflows/build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Windows 7 x64 proxy
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Build vulkan-1.dll
+        shell: cmd
+        run: |
+          if not exist dist mkdir dist
+          cl /nologo /LD /O2 /MT /EHsc /std:c++17 /D_WIN32_WINNT=0x0601 /DWINVER=0x0601 src\vk3to2_proxy.cpp /link /DEF:src\vk3to2.def /OUT:dist\vulkan-1.dll /PDB:dist\VK3to2.pdb
+
+      - name: Verify exports
+        shell: cmd
+        run: dumpbin /exports dist\vulkan-1.dll
+
+      - name: Upload VK3to2-00-passthrough
+        uses: actions/upload-artifact@v4
+        with:
+          name: VK3to2-00-passthrough
+          path: |
+            dist/vulkan-1.dll
+            dist/VK3to2.pdb
+          if-no-files-found: error
