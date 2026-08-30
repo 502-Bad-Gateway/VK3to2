@@ -117,7 +117,8 @@ static bool EnsureRealVulkan() {
     return g_real_vulkan != nullptr && g_real_gipa != nullptr;
 }
 
-extern "C" PFN_vkVoidFunction WINAPI vkGetDeviceProcAddr(VkDevice device, const char* name);
+extern "C" __declspec(dllexport)
+PFN_vkVoidFunction WINAPI vkGetDeviceProcAddr(VkDevice device, const char* name);
 
 extern "C" __declspec(dllexport)
 PFN_vkVoidFunction WINAPI vkGetInstanceProcAddr(VkInstance instance, const char* name) {
