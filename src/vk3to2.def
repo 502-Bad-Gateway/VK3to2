@@ -1,0 +1,4 @@
+LIBRARY "vulkan-1"
+EXPORTS
+    vkGetInstanceProcAddr
+    vkGetDeviceProcAddr
