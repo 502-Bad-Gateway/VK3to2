@@ -2,6 +2,11 @@ name: Build VK3to2
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/BUILD09_TRIGGER
 
 permissions:
   contents: read
