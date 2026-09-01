@@ -27,7 +27,7 @@ jobs:
 
       - name: Apply Build 10 patch
         shell: powershell
-        run: .\ci\apply-build10.ps1
+        run: .\ci\apply-build10-final.ps1
 
       - name: Build vulkan-1.dll
         shell: cmd
